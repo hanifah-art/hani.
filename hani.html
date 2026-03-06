@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hani. | Modern Girly Store</title>
+    <!-- Import Font Vintage Style -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Import Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --accent-color: #000000;
+            --secondary-bg: #f4f4f4;
+            --border-color: #e0e0e0;
+            --font-heading: 'Playfair Display', serif; /* Nuansa Vintage */
+            --font-body: 'Lato', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; }
+
+        /* --- HEADER & NAV --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+        }
+
+        .cart-icon-wrapper { position: relative; }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: black;
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- BACK BUTTON (Global) --- */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 2000;
+            background: white;
+            border: 1px solid black;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- SECTIONS (SPA Logic) --- */
+        .page-section {
+            display: none; /* Hide all sections initially */
+            padding: 20px;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- HOME: HERO & FILTER --- */
+        .hero {
+            text-align: center;
+            padding: 40px 0;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+        }
+        .hero h2 { font-family: var(--font-heading); font-size: 2.5rem; margin-bottom: 10px; }
+        .hero p { font-style: italic; color: #555; }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid black;
+            border-radius: 20px;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: black;
+            color: white;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-family: var(--font-body);
+        }
+
+        /* --- PRODUCT GRID --- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Efek Gerak Saat Ditekan (Active State) */
+        .product-card:active {
+            transform: scale(0.95) rotate(-2deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .product-info { padding: 10px; text-align: center; }
+        .product-name { font-family: var(--font-heading); font-weight: 700; font-size: 1rem; margin-bottom: 5px; }
+        .product-price { font-weight: bold; font-size: 0.9rem; }
+        
+        .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        .wishlist-btn.active { color: red; }
+
+        /* --- PRODUCT DETAIL PAGE --- */
+        .detail-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .detail-img { width: 100%; height: 400px; object-fit: cover; }
+        .detail-title { font-family: var(--font-heading); font-size: 2rem; }
+        .detail-price { font-size: 1.5rem; font-weight: bold; margin: 10px 0; }
+        .detail-desc { line-height: 1.6; color: #444; margin-bottom: 20px; }
+        
+        .variants { margin-bottom: 20px; }
+        .variant-option {
+            display: inline-block;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .variant-option.selected { background: black; color: white; border-color: black; }
+
+        .reviews-section {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .review-item { margin-bottom: 15px; border-bottom: 1px solid #f4f4f4; padding-bottom: 10px; }
+        .stars { color: #FFD700; }
+
+        /* --- CART & CHECKOUT --- */
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .cart-item img { width: 80px; height: 80px; object-fit: cover; }
+        .cart-details { flex: 1; }
+        
+        .checkout-form label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .checkout-form input, .checkout-form select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            font-family: var(--font-body);
+        }
+        .payment-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .payment-option {
+            border: 1px solid #ccc;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .payment-option.selected { border-color: black; background: #f9f9f9; }
+
+        /* --- LOGIN PAGE --- */
+        .login-box {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .login-box h2 { font-family: var(--font-heading); margin-bottom: 20px; }
+
+        /* --- FLOATING ACTION BUTTONS --- */
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background: black;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .action-btn:hover { background: #333; }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (min-width: 768px) {
+            .product-grid { grid-template-columns: repeat(4, 1fr); }
+            .detail-container { flex-direction: row; }
+            .detail-img { width: 50%; height: auto; }
+            .detail-info { width: 50%; padding-left: 30px; }
+            .back-btn { display: none; } /* Hide back button on desktop if nav exists */
+        }
+        
+        /* Utility */
+        .hidden { display: none !important; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+
+    <!-- Tombol Kembali Global -->
+    <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+
+    <!-- Header -->
+    <header>
+        <div class="logo" onclick="navigateTo('home')">Hani.</div>
+        <div class="nav-icons">
+            <button onclick="navigateTo('wishlist')"><i class="far fa-heart"></i></button>
+            <button onclick="navigateTo('account')" id="auth-btn"><i class="far fa-user"></i></button>
+            <div class="cart-icon-wrapper" onclick="navigateTo('cart')">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. HOME PAGE -->
+    <section id="home" class="page-section active">
+        <div class="hero">
+            <h2>Elegance in Black & White</h2>
+            <p>Koleksi Girly Modern untuk Kamu</p>
+        </div>
+
+        <input type="text" class="search-bar" placeholder="Cari produk (mis: Dress, Lipstik)..." onkeyup="filterProducts()">
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterCategory('all')">Semua</button>
+            <button class="filter-btn" onclick="filterCategory('fashion')">Fashion</button>
+            <button class="filter-btn" onclick="filterCategory('beauty')">Beauty</button>
+            <button class="filter-btn" onclick="filterCategory('accessories')">Accessories</button>
+        </div>
+
+        <div class="product-grid" id="product-grid">
+            <!-- Produk akan di-render oleh JS -->
+        </div>
+    </section>
+
+    <!-- 2. PRODUCT DETAIL PAGE -->
+    <section id="product-detail" class="page-section">
+        <div class="detail-container">
+            <img src="" alt="" class="detail-img" id="p-img">
+            <div class="detail-info">
+                <h1 class="detail-title" id="p-name">Nama Produk</h1>
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    <span style="color:#888; font-size:0.8rem;">(120 Ulasan)</span>
+                </div>
+                <p class="detail-price" id="p-price">Rp 0</p>
+                <p class="detail-desc">Deskripsi produk yang mendetail. Bahan berkualitas tinggi, cocok untuk tampilan modern dan elegan. Tersedia dalam berbagai varian.</p>
+                
+                <div class="variants">
+                    <p style="margin-bottom:5px; font-weight:bold;">Pilih Varian:</p>
+                    <div id="variant-container">
+                        <!-- Varian di-render JS -->
+                    </div>
+                </div>
+
+                <button class="action-btn" onclick="addToCartFromDetail()">Tambah ke Keranjang</button>
+                <button class="action-btn" style="background:white; color:black; border:1px solid black; margin-top:10px;" onclick="toggleWishlistCurrent()">Simpan ke Wishlist</button>
+
+                <div class="reviews-section">
+                    <h3>Ulasan Pelanggan</h3>
+                    <div class="review-item">
+                        <strong>Sarah A.</strong> <span class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span>
+                        <p>Barangnya bagus banget, sesuai foto! Pengiriman cepat.</p>
+                    </div>
+                    <div class="review-item">
+                        <strong>Dina K.</strong> <span class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></span>
+                        <p>Suka sama bahannya, adem dipakai.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. CART PAGE -->
+    <section id="cart" class="page-section">
+        <h2 style="font-family: var(--font-heading); margin-bottom: 20px;">Keranjang Belanja</h2>
+        <div id="cart-items-container">
+            <!-- Item keranjang -->
+        </div>
+        <div style="margin-top: 20px; border-top: 2px solid black; padding-top: 20px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem;">
+                <span>Total:</span>
+                <span id="cart-total">Rp 0</span>
+            </div>
+            <button class="action-btn" onclick="navigateTo('checkout')">Checkout Sekarang</button>
+        </div>
+    </section>
+
+    <!-- 4. CHECKOUT PAGE -->
+    <section id="checkout" class="page-section">
+        <h2 style="font-family: var(--font-heading); margin-bottom: 20px;">Checkout</h2>
+        <form class="checkout-form" onsubmit="processOrder(event)">
+            <label>Alamat Pengiriman</label>
+            <input type="text" placeholder="Nama Lengkap" required>
+            <input type="text" placeholder="Alamat Lengkap" required>
+            <input type="tel" placeholder="Nomor WhatsApp" required>
+
+            <label>Metode Pembayaran (Payment Gateway)</label>
+            <div class="payment-methods">
+                <div class="payment-option" onclick="selectPayment(this)">
+                    <i class="fas fa-wallet"></i> E-Wallet (GoPay/OVO/Dana)
+                </div>
+                <div class="payment-option" onclick="selectPayment(this)">
+                    <i class="fas fa-university"></i> Transfer Bank (BCA/Mandiri)
+                </div>
+                <div class="payment-option" onclick="selectPayment(this)">
+                    <i class="fas fa-money-bill-wave"></i> Kartu Kredit / Debit
+                </div>
+                <div class="payment-option" onclick="selectPayment(this)">
+                    <i class="fas fa-truck"></i> COD (Bayar di Tempat)
+                </div>
+            </div>
+
+            <label>Kode Voucher / Diskon</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" placeholder="Masukkan kode" style="margin-bottom:0;">
+                <button type="button" style="background:black; color:white; padding:0 20px;">Pakai</button>
+            </div>
+
+            <button type="submit" class="action-btn">Bayar Sekarang</button>
+        </form>
+    </section>
+
+    <!-- 5. LOGIN / ACCOUNT PAGE -->
+    <section id="account" class="page-section">
+        <div class="login-box" id="login-form">
+            <h2>Login Hani.</h2>
+            <input type="email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc;">
+            <input type="password" placeholder="Password" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #ccc;">
+            <button class="action-btn" onclick="login()">Masuk</button>
+            <p style="margin-top:15px; font-size:0.8rem;">Belum punya akun? <u>Daftar</u></p>
+        </div>
+
+        <div class="login-box hidden" id="user-profile">
+            <h2>Halo, <span id="user-name-display">Customer</span></h2>
+            <div style="text-align:left; margin-bottom:20px;">
+                <p><strong>Riwayat Pesanan:</strong></p>
+                <ul style="font-size:0.9rem; color:#555;">
+                    <li>#ORD-001 - Selesai</li>
+                    <li>#ORD-002 - Dalam Pengiriman</li>
+                </ul>
+            </div>
+            <button class="action-btn" style="background:white; color:black; border:1px solid black;" onclick="logout()">Logout</button>
+        </div>
+    </section>
+
+    <!-- 6. WISHLIST PAGE -->
+    <section id="wishlist" class="page-section">
+        <h2 style="font-family: var(--font-heading); margin-bottom: 20px;">Wishlist Saya</h2>
+        <div class="product-grid" id="wishlist-grid">
+            <!-- Wishlist items -->
+        </div>
+    </section>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA PRODUK (20 Produk Girly) ---
+        const products = [
+            { id: 1, name: "Silk Satin Dress", price: 250000, cat: "fashion", img: "https://i.pinimg.com/736x/75/fb/63/75fb63a17f87eb2a16928b192b788d73.jpg", variants: ["S", "M", "L"], desc: "Gaun satin premium dengan potongan modern." },
+            { id: 2, name: "Rose Gold Necklace", price: 120000, cat: "accessories", img: "https://i.pinimg.com/1200x/d3/7e/c5/d37ec59792c3a836f722d9100801689a.jpg", variants: ["One Size"], desc: "Kalung elegan berlapis emas mawar." },
+            { id: 3, name: "Matte Lipstick Set", price: 150000, cat: "beauty", img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=500&q=60", variants: ["Red", "Pink", "Nude"], desc: "Set lipstik matte tahan lama seharian." },
+            { id: 4, name: "Floral Blouse", price: 180000, cat: "fashion", img: "https://i.pinimg.com/1200x/94/a3/5c/94a35c7c5b576be9301a55c0bfca2612.jpg", variants: ["S", "M", "L"], desc: "Blus motif bunga yang feminim." },
+            { id: 5, name: "Pearl Earrings", price: 85000, cat: "accessories", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=60", variants: ["Gold", "Silver"], desc: "Anting mutiara klasik." },
+            { id: 6, name: "Skincare Glow Kit", price: 300000, cat: "beauty", img: "https://i.pinimg.com/736x/d0/31/b3/d031b3ad0f7b74fad132e4acab511d2e.jpg", variants: ["Dry Skin", "Oily Skin"], desc: "Paket lengkap perawatan wajah glowing." },
+            { id: 7, name: "Mini Handbag", price: 220000, cat: "accessories", img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=500&q=60", variants: ["Black", "White"], desc: "Tas kecil chic untuk acara malam." },
+            { id: 8, name: "White Sneakers", price: 350000, cat: "fashion", img: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=500&q=60", variants: ["36", "37", "38", "39"], desc: "Sepatu sneakers putih minimalis." },
+            { id: 9, name: "Perfume Vanilla", price: 900000, cat: "beauty", img: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=500&q=60", variants: ["30ml", "50ml"], desc: "Wangi vanilla yang manis dan lembut." },
+            { id: 10, name: "Denim Jacket", price: 2800000, cat: "fashion", img: "https://i.pinimg.com/1200x/18/43/76/1843765f9fb106ce1fc89eb69249d245.jpg", variants: ["S", "M", "L"], desc: "Jaket denim oversize kekinian." },
+            { id: 11, name: "Hair Clip Set", price: 45000, cat: "accessories", img: "https://i.pinimg.com/736x/3d/a1/f2/3da1f233f0ca56f140e93377eec440ce.jpg", variants: ["Gold", "Silver"], desc: "Set jepit rambut estetik." },
+            { id: 12, name: "Face Mask Pack", price: 75000, cat: "beauty", img: "https://i.pinimg.com/736x/85/d7/a9/85d7a99b5706a1d1afebd051dd59f90f.jpg", variants: ["Hydrating", "Brightening"], desc: "Masker wajah untuk relaksasi." },
+            { id: 13, name: "Pleated Skirt", price: 160000, cat: "fashion", img: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=500&q=60", variants: ["S", "M", "L"], desc: "Rok plisket panjang elegan." },
+            { id: 14, name: "Sunglasses Cat Eye", price: 95000, cat: "accessories", img: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=500&q=60", variants: ["Black", "Tortoise"], desc: "Kacamata hitam model cat eye." },
+            { id: 15, name: "Nail Polish Set", price: 110000, cat: "beauty", img: "https://i.pinimg.com/736x/5f/0d/fd/5f0dfda2d5915534e9a6849d0d3e38cf.jpg", variants: ["Pastel", "Neon"], desc: "Cat kuku warna-warni cerah." },
+            { id: 16, name: "Knit Cardigan", price: 210000, cat: "fashion", img: "https://i.pinimg.com/736x/2c/af/f9/2caff9003590df6900453022743a4e57.jpg", variants: ["Cream", "Brown"], desc: "Cardigan rajut lembut untuk musim hujan." },
+            { id: 17, name: "Watch Minimalist", price: 450000, cat: "accessories", img: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=500&q=60", variants: ["Rose Gold", "Silver"], desc: "Jam tangan minimalis elegan." },
+            { id: 18, name: "Body Lotion", price: 800000, cat: "beauty", img: "https://i.pinimg.com/1200x/d0/1d/8b/d01d8b411889618f2d16089f778a66ac.jpg", variants: ["Lavender", "Rose"], desc: "Losion tubuh pelembab harum." },
+            { id: 19, name: "Wide Leg Pants", price: 195000, cat: "fashion", img: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=500&q=60", variants: ["S", "M", "L"], desc: "Celana kulot nyaman dipakai." },
+            { id: 20, name: "Tote Bag Canvas", price: 130000, cat: "accessories", img: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=500&q=60", variants: ["Black", "Beige"], desc: "Tas kanvas kuat untuk sehari-hari." }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let cart = [];
+        let wishlist = [];
+        let isLoggedIn = false;
+        let currentProduct = null;
+        let historyStack = ['home']; // Untuk tombol back
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(products);
+            updateCartCount();
+        });
+
+        // --- NAVIGATION LOGIC ---
+        function navigateTo(pageId) {
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            // Show target
+            document.getElementById(pageId).classList.add('active');
+            
+            // Handle Back Button Visibility
+            const backBtn = document.querySelector('.back-btn');
+            if (pageId === 'home') {
+                backBtn.style.display = 'none';
+                historyStack = ['home'];
+            } else {
+                backBtn.style.display = 'flex';
+                if (historyStack[historyStack.length - 1] !== pageId) {
+                    historyStack.push(pageId);
+                }
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            if (historyStack.length > 1) {
+                historyStack.pop(); // Remove current
+                const prevPage = historyStack[historyStack.length - 1];
+                
+                document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+                document.getElementById(prevPage).classList.add('active');
+                
+                if (prevPage === 'home') {
+                    document.querySelector('.back-btn').style.display = 'none';
+                }
+            }
+        }
+
+        // --- PRODUCT RENDERING ---
+        function renderProducts(data) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => openProductDetail(p.id);
+                
+                // Cek apakah ada di wishlist
+                const isWishlisted = wishlist.includes(p.id) ? 'active' : '';
+
+                card.innerHTML = `
+                    <button class="wishlist-btn ${isWishlisted}" onclick="event.stopPropagation(); toggleWishlist(${p.id})">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img src="${p.img}" class="product-img" alt="${p.name}">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">Rp ${p.price.toLocaleString('id-ID')}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            // Update UI buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (cat === 'all') {
+                renderProducts(products);
+            } else {
+                const filtered = products.filter(p => p.cat === cat);
+                renderProducts(filtered);
+            }
+        }
+
+        function filterProducts() {
+            const query = document.querySelector('.search-bar').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        // --- PRODUCT DETAIL LOGIC ---
+        function openProductDetail(id) {
+            currentProduct = products.find(p => p.id === id);
+            
+            document.getElementById('p-img').src = currentProduct.img;
+            document.getElementById('p-name').innerText = currentProduct.name;
+            document.getElementById('p-price').innerText = `Rp ${currentProduct.price.toLocaleString('id-ID')}`;
+            
+            // Render Variants
+            const varContainer = document.getElementById('variant-container');
+            varContainer.innerHTML = '';
+            currentProduct.variants.forEach((v, index) => {
+                const span = document.createElement('span');
+                span.className = `variant-option ${index === 0 ? 'selected' : ''}`;
+                span.innerText = v;
+                span.onclick = function() {
+                    document.querySelectorAll('.variant-option').forEach(el => el.classList.remove('selected'));
+                    this.classList.add('selected');
+                };
+                varContainer.appendChild(span);
+            });
+
+            navigateTo('product-detail');
+        }
+
+        // --- CART LOGIC ---
+        function addToCartFromDetail() {
+            if (!currentProduct) return;
+            
+            // Get selected variant
+            const selectedVar = document.querySelector('.variant-option.selected').innerText;
+            
+            const existingItem = cart.find(item => item.id === currentProduct.id && item.variant === selectedVar);
+            
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({
+                    ...currentProduct,
+                    variant: selectedVar,
+                    qty: 1
+                });
+            }
+            
+            updateCartCount();
+            alert('Produk masuk keranjang!');
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((acc, item) => acc + item.qty, 0);
+            document.getElementById('cart-count').innerText = count;
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">Keranjang kosong.</p>';
+            } else {
+                cart.forEach((item, index) => {
+                    total += item.price * item.qty;
+                    const div = document.createElement('div');
+                    div.className = 'cart-item';
+                    div.innerHTML = `
+                        <img src="${item.img}">
+                        <div class="cart-details">
+                            <div style="font-weight:bold;">${item.name}</div>
+                            <div style="font-size:0.8rem; color:#666;">Varian: ${item.variant}</div>
+                            <div style="margin-top:5px;">
+                                <button onclick="changeQty(${index}, -1)">-</button>
+                                <span style="margin:0 10px;">${item.qty}</span>
+                                <button onclick="changeQty(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div>Rp ${(item.price * item.qty).toLocaleString('id-ID')}</div>
+                            <button onclick="removeFromCart(${index})" style="color:red; font-size:0.8rem; margin-top:5px;">Hapus</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function changeQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) cart.splice(index, 1);
+            updateCartCount();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+        }
+
+        // --- WISHLIST LOGIC ---
+        function toggleWishlist(id) {
+            if (wishlist.includes(id)) {
+                wishlist = wishlist.filter(wId => wId !== id);
+            } else {
+                wishlist.push(id);
+            }
+            // Re-render home to update icons
+            renderProducts(products); 
+            renderWishlistPage();
+        }
+
+        function toggleWishlistCurrent() {
+            if(currentProduct) toggleWishlist(currentProduct.id);
+        }
+
+        function renderWishlistPage() {
+            const grid = document.getElementById('wishlist-grid');
+            grid.innerHTML = '';
+            const wishProducts = products.filter(p => wishlist.includes(p.id));
+            
+            if(wishProducts.length === 0) {
+                grid.innerHTML = '<p>Belum ada produk di wishlist.</p>';
+                return;
+            }
+
+            wishProducts.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => openProductDetail(p.id);
+                card.innerHTML = `
+                    <button class="wishlist-btn active" onclick="event.stopPropagation(); toggleWishlist(${p.id})"><i class="fas fa-heart"></i></button>
+                    <img src="${p.img}" class="product-img">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">Rp ${p.price.toLocaleString('id-ID')}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- CHECKOUT LOGIC ---
+        function selectPayment(el) {
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function processOrder(e) {
+            e.preventDefault();
+            if (cart.length === 0) {
+                alert("Keranjang kosong!");
+                return;
+            }
+            // Simulasi proses
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Memproses...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                alert("Pesanan berhasil dibuat! Terima kasih telah berbelanja di Hani.");
+                cart = [];
+                updateCartCount();
+                navigateTo('home');
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        // --- AUTH LOGIC ---
+        function login() {
+            // Simulasi login
+            isLoggedIn = true;
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('user-profile').classList.remove('hidden');
+            document.getElementById('auth-btn').innerHTML = '<i class="fas fa-user-circle"></i>'; // Icon berubah
+            alert("Login Berhasil!");
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('user-profile').classList.add('hidden');
+            document.getElementById('auth-btn').innerHTML = '<i class="far fa-user"></i>';
+        }
+
+    </script>
+</body>
+</html>
